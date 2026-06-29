@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { ProjectState } from "@/app/actions/projects";
 import type { Category, Project } from "@/db/schema";
 
@@ -22,6 +22,14 @@ export function ProjectForm({
     {},
   );
   const editing = Boolean(project);
+
+  // For non-admins, default existing projects to whatever they already are
+  // (anything not "none" means they went public), and new projects to private.
+  const initialVisibility: "private" | "public" =
+    project && project.submissionStatus !== "none" ? "public" : "private";
+  const [visibility, setVisibility] = useState<"private" | "public">(
+    initialVisibility,
+  );
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -88,11 +96,41 @@ export function ProjectForm({
         />
       </label>
 
-      {!isAdmin && !editing && (
-        <p className="text-xs text-muted bg-surface-2 border border-border rounded-lg px-3 py-2">
-          Your project will be sent to the admin for review. Once approved it
-          appears in the Community section.
-        </p>
+      {!isAdmin && (
+        <fieldset className="flex flex-col gap-2">
+          <span className="text-muted text-sm">Visibility</span>
+          <input type="hidden" name="visibility" value={visibility} />
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setVisibility("private")}
+              className={`rounded-lg border px-3 py-2 text-sm text-left transition-colors ${
+                visibility === "private"
+                  ? "border-accent bg-accent/10"
+                  : "border-border bg-surface hover:bg-surface-2"
+              }`}
+            >
+              <span className="font-medium">Private</span>
+              <span className="block text-xs text-muted">
+                Only you. Not shared, no review.
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setVisibility("public")}
+              className={`rounded-lg border px-3 py-2 text-sm text-left transition-colors ${
+                visibility === "public"
+                  ? "border-accent bg-accent/10"
+                  : "border-border bg-surface hover:bg-surface-2"
+              }`}
+            >
+              <span className="font-medium">Public</span>
+              <span className="block text-xs text-muted">
+                Reviewed by the admin before it shows.
+              </span>
+            </button>
+          </div>
+        </fieldset>
       )}
 
       {state.error && (
@@ -112,7 +150,9 @@ export function ProjectForm({
             ? "Save changes"
             : isAdmin
               ? "Add project"
-              : "Submit for review"}
+              : visibility === "public"
+                ? "Submit for review"
+                : "Save project"}
       </button>
     </form>
   );

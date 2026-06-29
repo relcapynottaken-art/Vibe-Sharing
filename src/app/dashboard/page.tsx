@@ -21,7 +21,7 @@ export default async function DashboardPage() {
           <p className="text-muted text-sm">
             {isAdmin
               ? "Toggle which projects are visible to everyone."
-              : "Submit projects for review and track their status."}
+              : "Keep projects private, or make them public for review."}
           </p>
         </div>
         <Link
@@ -60,19 +60,22 @@ function StatusBadge({ project, isAdmin }: { project: ProjectCard; isAdmin: bool
     );
   }
   const map: Record<string, string> = {
-    pending:
-      "bg-warning/15 text-warning border-warning/30",
+    pending: "bg-warning/15 text-warning border-warning/30",
     approved: "bg-success/15 text-success border-success/30",
     rejected: "bg-danger/15 text-danger border-danger/30",
     none: "bg-surface-2 text-muted border-border",
   };
+  const label: Record<string, string> = {
+    pending: "Public · pending review",
+    approved: "Public",
+    rejected: "Rejected",
+    none: "Private",
+  };
   return (
     <span
-      className={`text-xs px-2 py-0.5 rounded-full border capitalize ${map[project.submissionStatus]}`}
+      className={`text-xs px-2 py-0.5 rounded-full border ${map[project.submissionStatus]}`}
     >
-      {project.submissionStatus === "pending"
-        ? "Pending review"
-        : project.submissionStatus}
+      {label[project.submissionStatus]}
     </span>
   );
 }

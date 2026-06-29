@@ -18,6 +18,7 @@ function readProjectInput(formData: FormData) {
     url: formData.get("url"),
     imageUrl: formData.get("imageUrl") ?? "",
     categoryId: rawCategory ? rawCategory : undefined,
+    visibility: formData.get("visibility") ?? undefined,
   });
 }
 
@@ -32,9 +33,19 @@ export async function createProjectAction(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
-  const { title, description, url, imageUrl, categoryId } = parsed.data;
+  const { title, description, url, imageUrl, categoryId, visibility } =
+    parsed.data;
 
   const isAdmin = user.role === "admin";
+
+  // Admins manage visibility with their own toggle (starts hidden).
+  // A user can keep a project private (no review) or request it be made
+  // public, which sends it to the admin review queue.
+  const submissionStatus = isAdmin
+    ? "none"
+    : visibility === "public"
+      ? "pending"
+      : "none";
 
   await db.insert(projects).values({
     ownerId: user.id,
@@ -43,10 +54,8 @@ export async function createProjectAction(
     url,
     imageUrl: imageUrl ? imageUrl : null,
     categoryId: categoryId ?? null,
-    // Admin projects: control visibility directly. They start private.
-    // User projects: this is an application — goes to the review queue.
     isPublic: false,
-    submissionStatus: isAdmin ? "none" : "pending",
+    submissionStatus,
   });
 
   revalidatePath("/dashboard");
@@ -78,11 +87,25 @@ export async function updateProjectAction(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
-  const { title, description, url, imageUrl, categoryId } = parsed.data;
+  const { title, description, url, imageUrl, categoryId, visibility } =
+    parsed.data;
 
-  // Editing a previously-rejected user submission re-enters the review queue.
-  const reentersReview =
-    existing.submissionStatus === "rejected" && user.role !== "admin";
+  // Recompute moderation state for non-admins based on their private/public
+  // choice. Going public (unless already approved) enters the review queue;
+  // going private clears any review state. Admins keep their own state.
+  let submissionStatus = existing.submissionStatus;
+  let reviewerNote = existing.reviewerNote;
+  if (user.role !== "admin") {
+    if (visibility === "public") {
+      if (existing.submissionStatus !== "approved") {
+        submissionStatus = "pending";
+        reviewerNote = null;
+      }
+    } else {
+      submissionStatus = "none";
+      reviewerNote = null;
+    }
+  }
 
   await db
     .update(projects)
@@ -92,8 +115,8 @@ export async function updateProjectAction(
       url,
       imageUrl: imageUrl ? imageUrl : null,
       categoryId: categoryId ?? null,
-      submissionStatus: reentersReview ? "pending" : existing.submissionStatus,
-      reviewerNote: reentersReview ? null : existing.reviewerNote,
+      submissionStatus,
+      reviewerNote,
       updatedAt: new Date(),
     })
     .where(eq(projects.id, id));

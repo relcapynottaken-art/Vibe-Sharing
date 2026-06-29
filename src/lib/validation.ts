@@ -24,6 +24,9 @@ export const projectSchema = z.object({
     .union([z.string().trim().url("Enter a valid image URL"), z.literal("")])
     .optional(),
   categoryId: z.coerce.number().int().positive().optional(),
+  // Non-admin visibility choice: "private" (owner-only, no review) or
+  // "public" (enters the admin review queue).
+  visibility: z.enum(["private", "public"]).optional(),
 });
 
 export type ProjectInput = z.infer<typeof projectSchema>;
