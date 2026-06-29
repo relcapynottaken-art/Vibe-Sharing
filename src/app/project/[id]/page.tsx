@@ -2,6 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getProjectById } from "@/lib/data";
+import {
+  ArrowLeftIcon,
+  ExternalLinkIcon,
+  ImageIcon,
+  UsersIcon,
+} from "@/components/icons";
 
 export default async function ProjectPage({
   params,
@@ -28,12 +34,16 @@ export default async function ProjectPage({
 
   return (
     <article className="max-w-3xl mx-auto flex flex-col gap-6">
-      <Link href="/" className="text-sm text-muted hover:text-foreground">
-        ← Back to explore
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors w-fit cursor-pointer"
+      >
+        <ArrowLeftIcon className="text-base" />
+        Back to explore
       </Link>
 
-      <div className="rounded-2xl border border-border bg-surface overflow-hidden">
-        <div className="aspect-[16/9] bg-surface-2">
+      <div className="glass rounded-3xl overflow-hidden">
+        <div className="aspect-[16/9] bg-white/5">
           {project.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -42,8 +52,8 @@ export default async function ProjectPage({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-6xl">
-              ✨
+            <div className="w-full h-full flex items-center justify-center text-white/15 text-6xl">
+              <ImageIcon />
             </div>
           )}
         </div>
@@ -51,26 +61,39 @@ export default async function ProjectPage({
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-bold">{project.title}</h1>
-          <p className="text-muted mt-1">
-            by @{project.authorName}
-            {project.categoryName && <> · {project.categoryName}</>}
-          </p>
+          <div className="flex items-center gap-2 flex-wrap mb-2">
+            {project.categoryName && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-accent-strong/15 text-accent border border-accent-strong/30">
+                {project.categoryName}
+              </span>
+            )}
+            {project.authorRole === "user" && (
+              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-accent-2/15 text-accent-2 border border-accent-2/30">
+                <UsersIcon className="text-[0.7rem]" />
+                Community
+              </span>
+            )}
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold">{project.title}</h1>
+          <p className="text-muted mt-1.5">by @{project.authorName}</p>
         </div>
         <a
           href={project.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="px-5 py-2.5 rounded-lg bg-accent text-white font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
+          className="btn btn-primary px-5 py-3"
         >
-          Open project ↗
+          Open project
+          <ExternalLinkIcon className="text-base" />
         </a>
       </div>
 
       {project.description && (
-        <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed">
-          {project.description}
-        </p>
+        <div className="glass rounded-2xl p-6">
+          <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed">
+            {project.description}
+          </p>
+        </div>
       )}
     </article>
   );

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCategories, getPublicProjects } from "@/lib/data";
 import { ProjectCard } from "@/components/ProjectCard";
+import { GridIcon, PlusIcon, SparkIcon } from "@/components/icons";
 
 export default async function HomePage({
   searchParams,
@@ -14,28 +15,39 @@ export default async function HomePage({
   ]);
 
   return (
-    <div className="flex flex-col gap-10">
-      <section className="text-center pt-6 pb-2">
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-          All your <span className="gradient-text">vibecoded</span> projects,
-          <br className="hidden sm:block" /> one shareable home.
+    <div className="flex flex-col gap-12">
+      <section className="relative text-center pt-10 pb-4">
+        <span className="inline-flex items-center gap-2 text-xs font-medium text-accent bg-accent-strong/10 border border-accent-strong/30 rounded-full px-3 py-1 mb-6">
+          <SparkIcon className="text-sm" />
+          Your vibecoded project hub
+        </span>
+        <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-[1.05]">
+          All your <span className="gradient-text">vibecoded</span>
+          <br className="hidden sm:block" /> projects, one home.
         </h1>
-        <p className="text-muted mt-4 max-w-xl mx-auto">
-          Browse projects published by the community and the curator. Got
-          something you built? Submit it for review.
+        <p className="text-muted mt-5 max-w-xl mx-auto text-base sm:text-lg leading-relaxed">
+          Collect everything you build, show off what you want, and let the
+          community submit their own — reviewed before they go live.
         </p>
-        <div className="flex items-center justify-center gap-3 mt-6">
-          <Link
-            href="/dashboard/new"
-            className="px-5 py-2.5 rounded-lg bg-accent text-white font-medium hover:opacity-90 transition-opacity"
-          >
+        <div className="flex items-center justify-center gap-3 mt-8">
+          <Link href="/dashboard/new" className="btn btn-primary px-6 py-3">
+            <PlusIcon className="text-base" />
             Submit a project
+          </Link>
+          <Link href="/signup" className="btn btn-ghost px-6 py-3">
+            Create account
           </Link>
         </div>
       </section>
 
       <section>
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex items-center gap-2 mb-5 text-sm text-muted">
+          <GridIcon className="text-base" />
+          <span className="font-medium text-foreground">Explore projects</span>
+          <span className="ml-auto">{projects.length} shown</span>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-7">
           <CategoryChip slug={undefined} active={!category} label="All" />
           {categories.map((c) => (
             <CategoryChip
@@ -48,9 +60,19 @@ export default async function HomePage({
         </div>
 
         {projects.length === 0 ? (
-          <p className="text-muted text-center py-16 border border-dashed border-border rounded-2xl">
-            No projects here yet.
-          </p>
+          <div className="glass rounded-2xl text-center py-20 px-6">
+            <div className="text-white/15 text-5xl flex justify-center mb-3">
+              <GridIcon />
+            </div>
+            <p className="text-muted">No projects here yet. Be the first.</p>
+            <Link
+              href="/dashboard/new"
+              className="btn btn-primary px-5 py-2.5 mt-5"
+            >
+              <PlusIcon className="text-base" />
+              Add a project
+            </Link>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {projects.map((p) => (
@@ -74,14 +96,7 @@ function CategoryChip({
 }) {
   const href = slug ? `/?category=${slug}` : "/";
   return (
-    <Link
-      href={href}
-      className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
-        active
-          ? "bg-accent text-white border-accent"
-          : "border-border text-muted hover:bg-surface-2"
-      }`}
-    >
+    <Link href={href} className={`chip ${active ? "chip-active" : ""}`}>
       {label}
     </Link>
   );

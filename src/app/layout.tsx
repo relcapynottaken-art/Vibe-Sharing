@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Poppins, Open_Sans } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -27,15 +30,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${poppins.variable} ${openSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <Nav />
-        <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-10">
           {children}
         </main>
-        <footer className="border-t border-border/60 py-6 text-center text-sm text-muted">
-          VibeShare · built for storing &amp; sharing vibecoded projects
+        <footer className="mt-8 border-t border-border py-8 text-center text-sm text-muted">
+          VibeShare · a home for your vibecoded projects
         </footer>
       </body>
     </html>

@@ -11,15 +11,17 @@ export default async function NewProjectPage() {
 
   return (
     <div className="max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold mb-1">New project</h1>
+      <h1 className="text-3xl font-bold mb-1">New project</h1>
       <p className="text-muted text-sm mb-6">
         Add a link to your vibecoded project and a screenshot.
       </p>
-      <ProjectForm
-        action={createProjectAction}
-        categories={categories}
-        isAdmin={user.role === "admin"}
-      />
+      <div className="glass-strong rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/20">
+        <ProjectForm
+          action={createProjectAction}
+          categories={categories}
+          isAdmin={user.role === "admin"}
+        />
+      </div>
     </div>
   );
 }

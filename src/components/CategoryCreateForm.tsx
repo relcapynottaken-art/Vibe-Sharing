@@ -24,12 +24,12 @@ export function CategoryCreateForm() {
           name="name"
           required
           placeholder="New category name"
-          className="flex-1 rounded-lg bg-surface border border-border px-3 py-2 outline-none focus:border-accent text-sm"
+          className="input flex-1 py-2 text-sm"
         />
         <button
           type="submit"
           disabled={pending}
-          className="px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+          className="btn btn-primary px-4 py-2 text-sm"
         >
           Add
         </button>

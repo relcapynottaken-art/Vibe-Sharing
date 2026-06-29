@@ -34,13 +34,15 @@ export default async function EditProjectPage({
 
   return (
     <div className="max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Edit project</h1>
-      <ProjectForm
-        action={updateProjectAction}
-        categories={categories}
-        project={project}
-        isAdmin={user.role === "admin"}
-      />
+      <h1 className="text-3xl font-bold mb-6">Edit project</h1>
+      <div className="glass-strong rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/20">
+        <ProjectForm
+          action={updateProjectAction}
+          categories={categories}
+          project={project}
+          isAdmin={user.role === "admin"}
+        />
+      </div>
     </div>
   );
 }

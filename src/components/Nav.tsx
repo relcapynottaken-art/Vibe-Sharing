@@ -1,21 +1,30 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { logoutAction } from "@/app/actions/auth";
+import { GridIcon, LogOutIcon, ShieldIcon, SparkIcon } from "@/components/icons";
 
 export async function Nav() {
   const user = await getCurrentUser();
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border/60 backdrop-blur bg-background/70">
-      <nav className="w-full max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        <Link href="/" className="font-bold text-lg tracking-tight">
-          <span className="gradient-text">Vibe</span>Share
+    <header className="sticky top-0 z-30 px-4 sm:px-6 pt-4">
+      <nav className="glass-strong rounded-2xl w-full max-w-6xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-3 shadow-lg shadow-black/20">
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-display font-semibold text-lg tracking-tight px-2"
+        >
+          <span className="grid place-items-center w-8 h-8 rounded-xl bg-gradient-to-br from-accent-strong to-accent-2 text-white text-base">
+            <SparkIcon />
+          </span>
+          <span>
+            <span className="gradient-text">Vibe</span>Share
+          </span>
         </Link>
 
-        <div className="flex items-center gap-2 sm:gap-3 text-sm">
+        <div className="flex items-center gap-1 sm:gap-2 text-sm">
           <Link
             href="/"
-            className="px-3 py-1.5 rounded-lg hover:bg-surface-2 transition-colors"
+            className="hidden sm:inline-flex px-3 py-1.5 rounded-lg text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer"
           >
             Explore
           </Link>
@@ -24,27 +33,31 @@ export async function Nav() {
             <>
               <Link
                 href="/dashboard"
-                className="px-3 py-1.5 rounded-lg hover:bg-surface-2 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer"
               >
-                Dashboard
+                <GridIcon className="text-base" />
+                <span className="hidden sm:inline">Dashboard</span>
               </Link>
               {user.role === "admin" && (
                 <Link
                   href="/admin"
-                  className="px-3 py-1.5 rounded-lg hover:bg-surface-2 transition-colors text-accent-2"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-accent-2 hover:bg-white/5 transition-colors cursor-pointer"
                 >
-                  Admin
+                  <ShieldIcon className="text-base" />
+                  <span className="hidden sm:inline">Admin</span>
                 </Link>
               )}
-              <span className="hidden sm:inline text-muted">
+              <span className="hidden md:inline text-muted px-1">
                 @{user.username}
               </span>
               <form action={logoutAction}>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 rounded-lg border border-border hover:bg-surface-2 transition-colors"
+                  className="btn btn-ghost px-3 py-1.5 text-sm"
+                  aria-label="Log out"
                 >
-                  Log out
+                  <LogOutIcon className="text-base" />
+                  <span className="hidden sm:inline">Log out</span>
                 </button>
               </form>
             </>
@@ -52,14 +65,11 @@ export async function Nav() {
             <>
               <Link
                 href="/login"
-                className="px-3 py-1.5 rounded-lg hover:bg-surface-2 transition-colors"
+                className="px-3 py-1.5 rounded-lg text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer"
               >
                 Log in
               </Link>
-              <Link
-                href="/signup"
-                className="px-3 py-1.5 rounded-lg bg-accent text-white font-medium hover:opacity-90 transition-opacity"
-              >
+              <Link href="/signup" className="btn btn-primary px-4 py-1.5 text-sm">
                 Sign up
               </Link>
             </>
