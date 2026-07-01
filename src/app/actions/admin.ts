@@ -26,7 +26,7 @@ export async function reviewSubmissionAction(formData: FormData): Promise<void> 
 
   const id = Number(formData.get("id"));
   const decision = String(formData.get("decision"));
-  const note = String(formData.get("note") ?? "").trim();
+  const note = String(formData.get("note") ?? "").trim().slice(0, 2000);
   if (!Number.isInteger(id)) return;
   if (decision !== "approved" && decision !== "rejected") return;
 
@@ -53,6 +53,7 @@ export async function createCategoryAction(
 
   const name = String(formData.get("name") ?? "").trim();
   if (name.length < 2) return { error: "Category name is too short." };
+  if (name.length > 60) return { error: "Category name is too long." };
   const slug = slugify(name);
   if (!slug) return { error: "Invalid category name." };
 

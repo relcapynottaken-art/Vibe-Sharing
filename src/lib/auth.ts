@@ -1,10 +1,15 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
+import { and, eq, lt } from "drizzle-orm";
+import { db } from "@/db";
+import { sessions } from "@/db/schema";
 import {
   SESSION_COOKIE,
   signToken,
   verifyToken,
+  type Role,
   type SessionUser,
 } from "./session";
 
@@ -22,8 +27,24 @@ export async function verifyPassword(
   return bcrypt.compare(password, hash);
 }
 
-export async function createSession(user: SessionUser): Promise<void> {
-  const token = await signToken(user);
+export async function createSession(user: {
+  id: number;
+  username: string;
+  role: Role;
+}): Promise<void> {
+  const sid = randomUUID();
+  const expiresAt = new Date(Date.now() + MAX_AGE * 1000);
+
+  // Best-effort tidy-up of this user's stale rows; not required for
+  // correctness (getCurrentUser also checks expiresAt).
+  await db
+    .delete(sessions)
+    .where(and(eq(sessions.userId, user.id), lt(sessions.expiresAt, new Date())))
+    .catch(() => {});
+
+  await db.insert(sessions).values({ userId: user.id, sid, expiresAt });
+
+  const token = await signToken({ ...user, sid });
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
@@ -36,13 +57,32 @@ export async function createSession(user: SessionUser): Promise<void> {
 
 export async function destroySession(): Promise<void> {
   const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  const user = await verifyToken(token);
+  if (user) {
+    await db.delete(sessions).where(eq(sessions.sid, user.sid)).catch(() => {});
+  }
   cookieStore.delete(SESSION_COOKIE);
 }
 
 export async function getCurrentUser(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
-  return verifyToken(token);
+  const user = await verifyToken(token);
+  if (!user) return null;
+
+  // Authoritative revocation check: the JWT alone only proves it was signed
+  // by us and hasn't expired — it doesn't prove the session wasn't logged
+  // out. A missing/expired row here means the session is dead even if the
+  // JWT itself still validates.
+  const [row] = await db
+    .select({ expiresAt: sessions.expiresAt })
+    .from(sessions)
+    .where(eq(sessions.sid, user.sid))
+    .limit(1);
+  if (!row || row.expiresAt.getTime() < Date.now()) return null;
+
+  return user;
 }
 
 export async function requireUser(): Promise<SessionUser> {

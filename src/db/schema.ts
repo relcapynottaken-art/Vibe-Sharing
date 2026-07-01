@@ -29,6 +29,22 @@ export const users = pgTable("users", {
     .defaultNow(),
 });
 
+// Backs revocable sessions: the JWT cookie proves who signed it and that it
+// hasn't expired, but not that it's still "logged in" — logout (or a future
+// admin-initiated revoke) deletes the matching row here, and getCurrentUser()
+// checks it on every request so a copied/leaked token stops working.
+export const sessions = pgTable("sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  sid: text("sid").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
@@ -65,3 +81,4 @@ export const projects = pgTable("projects", {
 export type User = typeof users.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type Project = typeof projects.$inferSelect;
+export type Session = typeof sessions.$inferSelect;

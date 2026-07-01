@@ -1,5 +1,24 @@
 import { z } from "zod";
 
+// zod's built-in .url() only checks that the string parses as *a* URL — it
+// happily accepts "javascript:", "data:", "vbscript:" etc, which is unsafe
+// for anything rendered back out as an <a href> or <img src>. Restrict to
+// http(s) explicitly.
+function httpUrl(message: string) {
+  return z
+    .string()
+    .trim()
+    .max(500)
+    .refine((value) => {
+      try {
+        const parsed = new URL(value);
+        return parsed.protocol === "http:" || parsed.protocol === "https:";
+      } catch {
+        return false;
+      }
+    }, message);
+}
+
 export const credentialsSchema = z.object({
   username: z
     .string()
@@ -19,9 +38,9 @@ export const credentialsSchema = z.object({
 export const projectSchema = z.object({
   title: z.string().trim().min(1, "Title is required.").max(120),
   description: z.string().trim().max(2000).optional().default(""),
-  url: z.string().trim().url("Enter a valid URL (https://...)").max(500),
+  url: httpUrl("Enter a valid URL (https://...)"),
   imageUrl: z
-    .union([z.string().trim().url("Enter a valid image URL"), z.literal("")])
+    .union([httpUrl("Enter a valid image URL"), z.literal("")])
     .optional(),
   categoryId: z.coerce.number().int().positive().optional(),
   // Non-admin visibility choice: "private" (owner-only, no review) or
