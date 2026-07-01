@@ -159,7 +159,7 @@ function VisibilityOption({
       className={`text-left rounded-xl border p-3 transition-all cursor-pointer ${
         active
           ? "border-accent-strong bg-accent-strong/10 shadow-lg shadow-accent-strong/10"
-          : "border-border bg-white/[0.03] hover:bg-white/[0.06]"
+          : "border-border bg-foreground/[0.02] hover:bg-foreground/[0.04]"
       }`}
     >
       <span

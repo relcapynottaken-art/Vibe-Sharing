@@ -21,7 +21,7 @@ export default async function HomePage({
           <SparkIcon className="text-sm" />
           Your vibecoded project hub
         </span>
-        <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-[1.05]">
+        <h1 className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.05]">
           All your <span className="gradient-text">vibecoded</span>
           <br className="hidden sm:block" /> projects, one home.
         </h1>
@@ -60,8 +60,8 @@ export default async function HomePage({
         </div>
 
         {projects.length === 0 ? (
-          <div className="glass rounded-2xl text-center py-20 px-6">
-            <div className="text-white/15 text-5xl flex justify-center mb-3">
+          <div className="surface rounded-2xl text-center py-20 px-6">
+            <div className="text-foreground/15 text-5xl flex justify-center mb-3">
               <GridIcon />
             </div>
             <p className="text-muted">No projects here yet. Be the first.</p>

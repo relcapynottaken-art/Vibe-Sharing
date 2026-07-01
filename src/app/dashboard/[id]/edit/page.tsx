@@ -35,7 +35,7 @@ export default async function EditProjectPage({
   return (
     <div className="max-w-lg mx-auto">
       <h1 className="text-3xl font-bold mb-6">Edit project</h1>
-      <div className="glass-strong rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/20">
+      <div className="surface-strong rounded-3xl p-6 sm:p-8">
         <ProjectForm
           action={updateProjectAction}
           categories={categories}

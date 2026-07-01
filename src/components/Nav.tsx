@@ -8,7 +8,7 @@ export async function Nav() {
 
   return (
     <header className="sticky top-0 z-30 px-4 sm:px-6 pt-4">
-      <nav className="glass-strong rounded-2xl w-full max-w-6xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-3 shadow-lg shadow-black/20">
+      <nav className="surface-strong rounded-2xl w-full max-w-6xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-3">
         <Link
           href="/"
           className="flex items-center gap-2 font-display font-semibold text-lg tracking-tight px-2"
@@ -24,7 +24,7 @@ export async function Nav() {
         <div className="flex items-center gap-1 sm:gap-2 text-sm">
           <Link
             href="/"
-            className="hidden sm:inline-flex px-3 py-1.5 rounded-lg text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer"
+            className="hidden sm:inline-flex px-3 py-1.5 rounded-lg text-muted hover:text-foreground hover:bg-foreground/[0.04] transition-colors cursor-pointer"
           >
             Explore
           </Link>
@@ -33,7 +33,7 @@ export async function Nav() {
             <>
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-muted hover:text-foreground hover:bg-foreground/[0.04] transition-colors cursor-pointer"
               >
                 <GridIcon className="text-base" />
                 <span className="hidden sm:inline">Dashboard</span>
@@ -41,7 +41,7 @@ export async function Nav() {
               {user.role === "admin" && (
                 <Link
                   href="/admin"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-accent-2 hover:bg-white/5 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-accent-2 hover:bg-foreground/[0.04] transition-colors cursor-pointer"
                 >
                   <ShieldIcon className="text-base" />
                   <span className="hidden sm:inline">Admin</span>
@@ -65,7 +65,7 @@ export async function Nav() {
             <>
               <Link
                 href="/login"
-                className="px-3 py-1.5 rounded-lg text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-lg text-muted hover:text-foreground hover:bg-foreground/[0.04] transition-colors cursor-pointer"
               >
                 Log in
               </Link>

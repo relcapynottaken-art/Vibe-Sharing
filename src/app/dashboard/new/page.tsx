@@ -15,7 +15,7 @@ export default async function NewProjectPage() {
       <p className="text-muted text-sm mb-6">
         Add a link to your vibecoded project and a screenshot.
       </p>
-      <div className="glass-strong rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/20">
+      <div className="surface-strong rounded-3xl p-6 sm:p-8">
         <ProjectForm
           action={createProjectAction}
           categories={categories}

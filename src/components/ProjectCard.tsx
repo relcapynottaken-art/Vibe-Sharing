@@ -4,12 +4,12 @@ import { ExternalLinkIcon, ImageIcon, UsersIcon } from "@/components/icons";
 
 export function ProjectCard({ project }: { project: ProjectCardData }) {
   return (
-    <div className="group glass rounded-2xl overflow-hidden flex flex-col transition-all duration-200 hover:border-accent/50 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-accent-strong/10">
+    <div className="group surface rounded-2xl overflow-hidden flex flex-col transition-all duration-200 hover:border-accent/50 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-accent-strong/10">
       <Link
         href={`/project/${project.id}`}
         className="block relative cursor-pointer"
       >
-        <div className="aspect-[16/10] bg-white/5 overflow-hidden">
+        <div className="aspect-[16/10] bg-foreground/[0.03] overflow-hidden">
           {project.imageUrl ? (
             // Arbitrary user-supplied URLs — plain img, not next/image.
             // eslint-disable-next-line @next/next/no-img-element
@@ -19,12 +19,12 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-white/15 text-5xl">
+            <div className="w-full h-full flex items-center justify-center text-foreground/15 text-5xl">
               <ImageIcon />
             </div>
           )}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end p-4">
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground/85 via-foreground/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end p-4">
           <span className="inline-flex items-center gap-1.5 text-sm font-medium text-white">
             View details
             <ExternalLinkIcon className="text-sm" />

@@ -22,7 +22,7 @@ export function AuthForm({
 
   return (
     <div className="max-w-sm mx-auto mt-10">
-      <div className="glass-strong rounded-3xl p-8 shadow-2xl shadow-black/30">
+      <div className="surface-strong rounded-3xl p-8">
         <div className="grid place-items-center w-12 h-12 rounded-2xl bg-gradient-to-br from-accent-strong to-accent-2 text-white text-xl mb-5">
           <SparkIcon />
         </div>

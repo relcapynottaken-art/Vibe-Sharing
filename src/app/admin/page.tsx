@@ -43,12 +43,12 @@ export default async function AdminPage() {
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <ClockIcon className="text-base text-warning" />
           Review queue
-          <span className="text-xs font-normal text-muted bg-white/5 border border-border rounded-full px-2 py-0.5">
+          <span className="text-xs font-normal text-muted bg-foreground/[0.03] border border-border rounded-full px-2 py-0.5">
             {pending.length}
           </span>
         </h2>
         {pending.length === 0 ? (
-          <div className="glass rounded-2xl text-center py-14 px-6 text-muted">
+          <div className="surface rounded-2xl text-center py-14 px-6 text-muted">
             Nothing waiting for review. You&apos;re all caught up.
           </div>
         ) : (
@@ -69,7 +69,7 @@ export default async function AdminPage() {
           {categories.map((c) => (
             <li
               key={c.id}
-              className="flex items-center gap-1 rounded-full border border-border bg-white/5 pl-3.5 pr-1 py-1 text-sm"
+              className="flex items-center gap-1 rounded-full border border-border bg-foreground/[0.03] pl-3.5 pr-1 py-1 text-sm"
             >
               {c.name}
               <form action={deleteCategoryAction}>
@@ -92,7 +92,7 @@ export default async function AdminPage() {
 
 function ReviewItem({ project }: { project: ProjectCard }) {
   return (
-    <li className="glass rounded-2xl p-5 flex flex-col gap-3">
+    <li className="surface rounded-2xl p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="min-w-0">
           <Link

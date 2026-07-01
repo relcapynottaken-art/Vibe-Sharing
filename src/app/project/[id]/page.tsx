@@ -42,8 +42,8 @@ export default async function ProjectPage({
         Back to explore
       </Link>
 
-      <div className="glass rounded-3xl overflow-hidden">
-        <div className="aspect-[16/9] bg-white/5">
+      <div className="surface rounded-3xl overflow-hidden">
+        <div className="aspect-[16/9] bg-foreground/[0.03]">
           {project.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -52,7 +52,7 @@ export default async function ProjectPage({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-white/15 text-6xl">
+            <div className="w-full h-full flex items-center justify-center text-foreground/15 text-6xl">
               <ImageIcon />
             </div>
           )}
@@ -89,7 +89,7 @@ export default async function ProjectPage({
       </div>
 
       {project.description && (
-        <div className="glass rounded-2xl p-6">
+        <div className="surface rounded-2xl p-6">
           <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed">
             {project.description}
           </p>

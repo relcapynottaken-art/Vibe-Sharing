@@ -41,8 +41,8 @@ export default async function DashboardPage() {
       </div>
 
       {projects.length === 0 ? (
-        <div className="glass rounded-2xl text-center py-20 px-6">
-          <div className="text-white/15 text-5xl flex justify-center mb-3">
+        <div className="surface rounded-2xl text-center py-20 px-6">
+          <div className="text-foreground/15 text-5xl flex justify-center mb-3">
             <GridIcon />
           </div>
           <p className="text-muted">You haven&apos;t added any projects yet.</p>
@@ -81,7 +81,7 @@ function StatusBadge({
         <GlobeIcon className="text-[0.7rem]" /> Public
       </span>
     ) : (
-      <span className={`${cls} bg-white/5 text-muted border-border`}>
+      <span className={`${cls} bg-foreground/[0.03] text-muted border-border`}>
         <LockIcon className="text-[0.7rem]" /> Hidden
       </span>
     );
@@ -108,7 +108,7 @@ function StatusBadge({
       );
     default:
       return (
-        <span className={`${cls} bg-white/5 text-muted border-border`}>
+        <span className={`${cls} bg-foreground/[0.03] text-muted border-border`}>
           <LockIcon className="text-[0.7rem]" /> Private
         </span>
       );
@@ -123,7 +123,7 @@ function DashboardRow({
   isAdmin: boolean;
 }) {
   return (
-    <li className="glass rounded-2xl p-4 flex items-center gap-4 flex-wrap transition-colors hover:border-accent/40">
+    <li className="surface rounded-2xl p-4 flex items-center gap-4 flex-wrap transition-colors hover:border-accent/40">
       <div className="flex-1 min-w-[200px]">
         <div className="flex items-center gap-2 flex-wrap">
           <Link
