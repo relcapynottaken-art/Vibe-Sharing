@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, ne, not, or } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, projects, users } from "@/db/schema";
 
@@ -124,6 +124,21 @@ export async function getPendingSubmissions(): Promise<ProjectCard[]> {
     .innerJoin(users, eq(projects.ownerId, users.id))
     .leftJoin(categories, eq(projects.categoryId, categories.id))
     .where(eq(projects.submissionStatus, "pending"))
+    .orderBy(desc(projects.createdAt)) as Promise<ProjectCard[]>;
+}
+
+// Everything not visible to the public and not already in the review queue:
+// admin's own hidden projects, plus user projects kept private or rejected.
+// Admin-only — never exposed to non-admin callers.
+export async function getPrivateProjects(): Promise<ProjectCard[]> {
+  return db
+    .select(cardColumns)
+    .from(projects)
+    .innerJoin(users, eq(projects.ownerId, users.id))
+    .leftJoin(categories, eq(projects.categoryId, categories.id))
+    .where(
+      and(not(publicCondition!), ne(projects.submissionStatus, "pending")),
+    )
     .orderBy(desc(projects.createdAt)) as Promise<ProjectCard[]>;
 }
 

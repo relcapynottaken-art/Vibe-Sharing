@@ -3,26 +3,30 @@ import { requireAdmin } from "@/lib/auth";
 import {
   getCategories,
   getPendingSubmissions,
-  type ProjectCard,
+  getPrivateProjects,
+  type ProjectCard as ProjectCardData,
 } from "@/lib/data";
 import {
   deleteCategoryAction,
   reviewSubmissionAction,
 } from "@/app/actions/admin";
 import { CategoryCreateForm } from "@/components/CategoryCreateForm";
+import { ProjectCard } from "@/components/ProjectCard";
 import { ToastForm } from "@/components/ToastForm";
 import {
   CheckIcon,
   ClockIcon,
   ExternalLinkIcon,
+  LockIcon,
   ShieldIcon,
   XIcon,
 } from "@/components/icons";
 
 export default async function AdminPage() {
   await requireAdmin();
-  const [pending, categories] = await Promise.all([
+  const [pending, privateProjects, categories] = await Promise.all([
     getPendingSubmissions(),
+    getPrivateProjects(),
     getCategories(),
   ]);
 
@@ -62,6 +66,31 @@ export default async function AdminPage() {
       </section>
 
       <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <LockIcon className="text-base text-muted" />
+          Private projects
+          <span className="text-xs font-normal text-muted bg-white/5 border border-border rounded-full px-2 py-0.5">
+            {privateProjects.length}
+          </span>
+        </h2>
+        <p className="text-sm text-muted -mt-2">
+          Only visible to you — hidden admin projects, and projects users kept
+          private or that were rejected.
+        </p>
+        {privateProjects.length === 0 ? (
+          <div className="glass rounded-2xl text-center py-14 px-6 text-muted">
+            Nothing private right now.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {privateProjects.map((p) => (
+              <ProjectCard key={p.id} project={p} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-4">
         <h2 className="text-lg font-semibold">Categories</h2>
         <div className="max-w-md">
           <CategoryCreateForm />
@@ -94,7 +123,7 @@ export default async function AdminPage() {
   );
 }
 
-function ReviewItem({ project }: { project: ProjectCard }) {
+function ReviewItem({ project }: { project: ProjectCardData }) {
   return (
     <li className="glass rounded-2xl p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-4 flex-wrap">
