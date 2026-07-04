@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 import { getUserPublicProfile } from "@/lib/data";
 import { ProjectCard } from "@/components/ProjectCard";
 import { GridIcon, LinkIcon, ShieldIcon } from "@/components/icons";
@@ -9,7 +10,9 @@ export default async function PublicProfilePage({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
-  const result = await getUserPublicProfile(username);
+  const viewer = await getCurrentUser();
+  const viewerIsAdmin = viewer?.role === "admin";
+  const result = await getUserPublicProfile(username, { viewerIsAdmin });
   if (!result) notFound();
   const { profile, projects } = result;
 
@@ -70,15 +73,19 @@ export default async function PublicProfilePage({
       <section>
         <h2 className="text-lg font-semibold mb-4">
           {projects.length > 0
-            ? `Public projects (${projects.length})`
-            : "Public projects"}
+            ? `${viewerIsAdmin ? "Projects" : "Public projects"} (${projects.length})`
+            : viewerIsAdmin
+              ? "Projects"
+              : "Public projects"}
         </h2>
         {projects.length === 0 ? (
           <div className="glass rounded-2xl text-center py-16 px-6">
             <div className="text-white/15 text-5xl flex justify-center mb-3">
               <GridIcon />
             </div>
-            <p className="text-muted">No public projects yet.</p>
+            <p className="text-muted">
+              {viewerIsAdmin ? "No projects yet." : "No public projects yet."}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

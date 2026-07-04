@@ -149,6 +149,7 @@ export type UserProfile = {
 
 export async function getUserPublicProfile(
   username: string,
+  opts?: { viewerIsAdmin?: boolean },
 ): Promise<{ profile: UserProfile; projects: ProjectCard[] } | undefined> {
   const [profile] = await db
     .select({
@@ -167,12 +168,18 @@ export async function getUserPublicProfile(
 
   if (!profile) return undefined;
 
+  // Admins see every project the user owns, public or private. Everyone else
+  // still only sees what publicCondition allows through.
+  const where = opts?.viewerIsAdmin
+    ? eq(projects.ownerId, profile.id)
+    : and(eq(projects.ownerId, profile.id), publicCondition);
+
   const ownerProjects = (await db
     .select(cardColumns)
     .from(projects)
     .innerJoin(users, eq(projects.ownerId, users.id))
     .leftJoin(categories, eq(projects.categoryId, categories.id))
-    .where(and(eq(projects.ownerId, profile.id), publicCondition))
+    .where(where)
     .orderBy(desc(projects.createdAt))) as ProjectCard[];
 
   return { profile, projects: ownerProjects };
