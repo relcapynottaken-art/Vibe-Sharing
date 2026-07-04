@@ -6,6 +6,7 @@ import {
   deleteProjectAction,
   toggleVisibilityAction,
 } from "@/app/actions/projects";
+import { ToastForm } from "@/components/ToastForm";
 import {
   ClockIcon,
   GlobeIcon,
@@ -14,6 +15,7 @@ import {
   PencilIcon,
   PlusIcon,
   TrashIcon,
+  UsersIcon,
   XIcon,
 } from "@/components/icons";
 
@@ -34,10 +36,16 @@ export default async function DashboardPage() {
               : "Keep projects private, or make them public for review."}
           </p>
         </div>
-        <Link href="/dashboard/new" className="btn btn-primary px-4 py-2.5">
-          <PlusIcon className="text-base" />
-          New project
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/dashboard/profile" className="btn btn-ghost px-4 py-2.5">
+            <UsersIcon className="text-base" />
+            Edit profile
+          </Link>
+          <Link href="/dashboard/new" className="btn btn-primary px-4 py-2.5">
+            <PlusIcon className="text-base" />
+            New project
+          </Link>
+        </div>
       </div>
 
       {projects.length === 0 ? (
@@ -146,7 +154,10 @@ function DashboardRow({
 
       <div className="flex items-center gap-2">
         {isAdmin && (
-          <form action={toggleVisibilityAction}>
+          <ToastForm
+            action={toggleVisibilityAction}
+            successMessage={project.isPublic ? "Project hidden." : "Project made public."}
+          >
             <input type="hidden" name="id" value={project.id} />
             <button type="submit" className="btn btn-ghost px-3 py-1.5 text-sm">
               {project.isPublic ? (
@@ -159,7 +170,7 @@ function DashboardRow({
                 </>
               )}
             </button>
-          </form>
+          </ToastForm>
         )}
         <Link
           href={`/dashboard/${project.id}/edit`}
@@ -169,7 +180,7 @@ function DashboardRow({
           <PencilIcon className="text-sm" />
           <span className="hidden sm:inline">Edit</span>
         </Link>
-        <form action={deleteProjectAction}>
+        <ToastForm action={deleteProjectAction} successMessage="Project deleted.">
           <input type="hidden" name="id" value={project.id} />
           <button
             type="submit"
@@ -179,7 +190,7 @@ function DashboardRow({
             <TrashIcon className="text-sm" />
             <span className="hidden sm:inline">Delete</span>
           </button>
-        </form>
+        </ToastForm>
       </div>
     </li>
   );

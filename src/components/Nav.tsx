@@ -47,9 +47,12 @@ export async function Nav() {
                   <span className="hidden sm:inline">Admin</span>
                 </Link>
               )}
-              <span className="hidden md:inline text-muted px-1">
+              <Link
+                href={`/u/${user.username}`}
+                className="hidden md:inline text-muted hover:text-foreground px-1 transition-colors cursor-pointer"
+              >
                 @{user.username}
-              </span>
+              </Link>
               <form action={logoutAction}>
                 <button
                   type="submit"

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins, Open_Sans } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 
@@ -33,6 +34,7 @@ export default function RootLayout({
       className={`${poppins.variable} ${openSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <Toaster theme="dark" position="bottom-right" richColors />
         <Nav />
         <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-10">
           {children}

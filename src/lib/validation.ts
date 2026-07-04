@@ -30,3 +30,29 @@ export const projectSchema = z.object({
 });
 
 export type ProjectInput = z.infer<typeof projectSchema>;
+
+export const profileSchema = z.object({
+  displayName: z
+    .string()
+    .trim()
+    .max(60, "Display name is too long.")
+    .optional()
+    .or(z.literal("")),
+  bio: z
+    .string()
+    .trim()
+    .max(280, "Bio must be at most 280 characters.")
+    .optional()
+    .or(z.literal("")),
+  avatarUrl: z
+    .union([z.string().trim().url("Enter a valid image URL"), z.literal("")])
+    .optional(),
+  websiteUrl: z
+    .union([
+      z.string().trim().url("Enter a valid URL (https://...)"),
+      z.literal(""),
+    ])
+    .optional(),
+});
+
+export type ProfileInput = z.infer<typeof profileSchema>;

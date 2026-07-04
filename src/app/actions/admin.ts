@@ -21,14 +21,21 @@ async function ensureAdmin() {
   return user;
 }
 
-export async function reviewSubmissionAction(formData: FormData): Promise<void> {
+export type ReviewState = { error?: string };
+
+export async function reviewSubmissionAction(
+  _prev: ReviewState,
+  formData: FormData,
+): Promise<ReviewState> {
   await ensureAdmin();
 
   const id = Number(formData.get("id"));
   const decision = String(formData.get("decision"));
   const note = String(formData.get("note") ?? "").trim();
-  if (!Number.isInteger(id)) return;
-  if (decision !== "approved" && decision !== "rejected") return;
+  if (!Number.isInteger(id)) return { error: "Invalid project." };
+  if (decision !== "approved" && decision !== "rejected") {
+    return { error: "Invalid decision." };
+  }
 
   await db
     .update(projects)
@@ -41,6 +48,7 @@ export async function reviewSubmissionAction(formData: FormData): Promise<void> 
 
   revalidatePath("/admin");
   revalidatePath("/");
+  return {};
 }
 
 export type CategoryState = { error?: string };
@@ -69,12 +77,16 @@ export async function createCategoryAction(
   return {};
 }
 
-export async function deleteCategoryAction(formData: FormData): Promise<void> {
+export async function deleteCategoryAction(
+  _prev: CategoryState,
+  formData: FormData,
+): Promise<CategoryState> {
   await ensureAdmin();
   const id = Number(formData.get("id"));
-  if (!Number.isInteger(id)) return;
+  if (!Number.isInteger(id)) return { error: "Invalid category." };
   // projects.categoryId is ON DELETE SET NULL, so projects survive uncategorized.
   await db.delete(categories).where(eq(categories.id, id));
   revalidatePath("/admin");
   revalidatePath("/");
+  return {};
 }

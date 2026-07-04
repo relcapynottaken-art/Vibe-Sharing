@@ -5,6 +5,7 @@ import {
   createCategoryAction,
   type CategoryState,
 } from "@/app/actions/admin";
+import { useActionToast } from "@/lib/use-action-toast";
 
 export function CategoryCreateForm() {
   const [state, formAction, pending] = useActionState<CategoryState, FormData>(
@@ -12,6 +13,7 @@ export function CategoryCreateForm() {
     {},
   );
   const formRef = useRef<HTMLFormElement>(null);
+  useActionToast(state, !state.error ? "Category added." : undefined);
 
   useEffect(() => {
     if (!pending && !state.error) formRef.current?.reset();

@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, or } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, projects, users } from "@/db/schema";
 
@@ -50,20 +50,35 @@ const publicCondition = or(
   eq(projects.submissionStatus, "approved"),
 );
 
+export type ProjectSort = "newest" | "oldest" | "name";
+
 export async function getPublicProjects(
   categorySlug?: string,
+  opts?: { q?: string; sort?: ProjectSort },
 ): Promise<ProjectCard[]> {
-  const where = categorySlug
-    ? and(publicCondition, eq(categories.slug, categorySlug))
-    : publicCondition;
+  const conditions = [publicCondition];
+  if (categorySlug) conditions.push(eq(categories.slug, categorySlug));
+  if (opts?.q) {
+    const term = `%${opts.q}%`;
+    conditions.push(
+      or(ilike(projects.title, term), ilike(projects.description, term))!,
+    );
+  }
+
+  const orderBy =
+    opts?.sort === "oldest"
+      ? asc(projects.createdAt)
+      : opts?.sort === "name"
+        ? asc(projects.title)
+        : desc(projects.createdAt);
 
   return db
     .select(cardColumns)
     .from(projects)
     .innerJoin(users, eq(projects.ownerId, users.id))
     .leftJoin(categories, eq(projects.categoryId, categories.id))
-    .where(where)
-    .orderBy(desc(projects.createdAt)) as Promise<ProjectCard[]>;
+    .where(and(...conditions))
+    .orderBy(orderBy) as Promise<ProjectCard[]>;
 }
 
 // Approved community (non-admin) submissions only.
@@ -119,4 +134,46 @@ export async function getAllProjects(): Promise<ProjectCard[]> {
     .innerJoin(users, eq(projects.ownerId, users.id))
     .leftJoin(categories, eq(projects.categoryId, categories.id))
     .orderBy(desc(projects.createdAt)) as Promise<ProjectCard[]>;
+}
+
+export type UserProfile = {
+  id: number;
+  username: string;
+  role: "admin" | "user";
+  displayName: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  websiteUrl: string | null;
+  createdAt: Date;
+};
+
+export async function getUserPublicProfile(
+  username: string,
+): Promise<{ profile: UserProfile; projects: ProjectCard[] } | undefined> {
+  const [profile] = await db
+    .select({
+      id: users.id,
+      username: users.username,
+      role: users.role,
+      displayName: users.displayName,
+      bio: users.bio,
+      avatarUrl: users.avatarUrl,
+      websiteUrl: users.websiteUrl,
+      createdAt: users.createdAt,
+    })
+    .from(users)
+    .where(eq(users.username, username))
+    .limit(1);
+
+  if (!profile) return undefined;
+
+  const ownerProjects = (await db
+    .select(cardColumns)
+    .from(projects)
+    .innerJoin(users, eq(projects.ownerId, users.id))
+    .leftJoin(categories, eq(projects.categoryId, categories.id))
+    .where(and(eq(projects.ownerId, profile.id), publicCondition))
+    .orderBy(desc(projects.createdAt))) as ProjectCard[];
+
+  return { profile, projects: ownerProjects };
 }

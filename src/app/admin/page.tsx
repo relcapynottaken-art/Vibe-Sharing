@@ -10,6 +10,7 @@ import {
   reviewSubmissionAction,
 } from "@/app/actions/admin";
 import { CategoryCreateForm } from "@/components/CategoryCreateForm";
+import { ToastForm } from "@/components/ToastForm";
 import {
   CheckIcon,
   ClockIcon,
@@ -72,7 +73,10 @@ export default async function AdminPage() {
               className="flex items-center gap-1 rounded-full border border-border bg-white/5 pl-3.5 pr-1 py-1 text-sm"
             >
               {c.name}
-              <form action={deleteCategoryAction}>
+              <ToastForm
+                action={deleteCategoryAction}
+                successMessage="Category deleted."
+              >
                 <input type="hidden" name="id" value={c.id} />
                 <button
                   type="submit"
@@ -81,7 +85,7 @@ export default async function AdminPage() {
                 >
                   <XIcon className="text-sm" />
                 </button>
-              </form>
+              </ToastForm>
             </li>
           ))}
         </ul>
@@ -122,8 +126,9 @@ function ReviewItem({ project }: { project: ProjectCard }) {
         </div>
       </div>
 
-      <form
+      <ToastForm
         action={reviewSubmissionAction}
+        successMessage="Submission reviewed."
         className="flex items-center gap-2 flex-wrap border-t border-border pt-3"
       >
         <input type="hidden" name="id" value={project.id} />
@@ -148,7 +153,7 @@ function ReviewItem({ project }: { project: ProjectCard }) {
         >
           <XIcon className="text-sm" /> Reject
         </button>
-      </form>
+      </ToastForm>
     </li>
   );
 }

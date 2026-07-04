@@ -126,3 +126,17 @@ export const ImageIcon = (p: SVGProps<SVGSVGElement>) => (
     <path d="m21 15-4.5-4.5L5 21" />
   </Base>
 );
+
+export const SearchIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Base {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m21 21-4.3-4.3" />
+  </Base>
+);
+
+export const LinkIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Base {...p}>
+    <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11.5 4.5" />
+    <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07l1.36-1.36" />
+  </Base>
+);

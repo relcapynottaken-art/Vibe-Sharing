@@ -1,17 +1,23 @@
 import Link from "next/link";
-import { getCategories, getPublicProjects } from "@/lib/data";
+import { getCategories, getPublicProjects, type ProjectSort } from "@/lib/data";
 import { ProjectCard } from "@/components/ProjectCard";
-import { GridIcon, PlusIcon, SparkIcon } from "@/components/icons";
+import { SortSelect } from "@/components/SortSelect";
+import { GridIcon, PlusIcon, SearchIcon, SparkIcon } from "@/components/icons";
+
+const SORTS: ProjectSort[] = ["newest", "oldest", "name"];
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; q?: string; sort?: string }>;
 }) {
-  const { category } = await searchParams;
+  const { category, q, sort: rawSort } = await searchParams;
+  const sort: ProjectSort = SORTS.includes(rawSort as ProjectSort)
+    ? (rawSort as ProjectSort)
+    : "newest";
   const [categories, projects] = await Promise.all([
     getCategories(),
-    getPublicProjects(category),
+    getPublicProjects(category, { q, sort }),
   ]);
 
   return (
@@ -47,14 +53,41 @@ export default async function HomePage({
           <span className="ml-auto">{projects.length} shown</span>
         </div>
 
+        <form
+          method="get"
+          action="/"
+          className="flex flex-col sm:flex-row gap-3 mb-5"
+        >
+          {category && <input type="hidden" name="category" value={category} />}
+          <label className="relative flex-1">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-base" />
+            <input
+              type="search"
+              name="q"
+              defaultValue={q ?? ""}
+              placeholder="Search projects…"
+              className="input pl-9"
+            />
+          </label>
+          <SortSelect defaultValue={sort} />
+        </form>
+
         <div className="flex flex-wrap gap-2 mb-7">
-          <CategoryChip slug={undefined} active={!category} label="All" />
+          <CategoryChip
+            slug={undefined}
+            active={!category}
+            label="All"
+            q={q}
+            sort={sort}
+          />
           {categories.map((c) => (
             <CategoryChip
               key={c.id}
               slug={c.slug}
               active={category === c.slug}
               label={c.name}
+              q={q}
+              sort={sort}
             />
           ))}
         </div>
@@ -64,7 +97,11 @@ export default async function HomePage({
             <div className="text-white/15 text-5xl flex justify-center mb-3">
               <GridIcon />
             </div>
-            <p className="text-muted">No projects here yet. Be the first.</p>
+            <p className="text-muted">
+              {q
+                ? `No projects match "${q}".`
+                : "No projects here yet. Be the first."}
+            </p>
             <Link
               href="/dashboard/new"
               className="btn btn-primary px-5 py-2.5 mt-5"
@@ -89,12 +126,21 @@ function CategoryChip({
   slug,
   active,
   label,
+  q,
+  sort,
 }: {
   slug?: string;
   active: boolean;
   label: string;
+  q?: string;
+  sort?: string;
 }) {
-  const href = slug ? `/?category=${slug}` : "/";
+  const params = new URLSearchParams();
+  if (slug) params.set("category", slug);
+  if (q) params.set("q", q);
+  if (sort && sort !== "newest") params.set("sort", sort);
+  const qs = params.toString();
+  const href = qs ? `/?${qs}` : "/";
   return (
     <Link href={href} className={`chip ${active ? "chip-active" : ""}`}>
       {label}

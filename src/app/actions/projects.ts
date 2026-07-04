@@ -126,12 +126,15 @@ export async function updateProjectAction(
   redirect("/dashboard");
 }
 
-export async function deleteProjectAction(formData: FormData): Promise<void> {
+export async function deleteProjectAction(
+  _prev: ProjectState,
+  formData: FormData,
+): Promise<ProjectState> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   const id = Number(formData.get("id"));
-  if (!Number.isInteger(id)) return;
+  if (!Number.isInteger(id)) return { error: "Invalid project." };
 
   // Ownership enforced in the query: a non-admin can only delete their own.
   if (user.role === "admin") {
@@ -144,24 +147,26 @@ export async function deleteProjectAction(formData: FormData): Promise<void> {
 
   revalidatePath("/dashboard");
   revalidatePath("/");
+  return {};
 }
 
 // Admin-only: flip the public/hidden switch on one of their own projects.
 export async function toggleVisibilityAction(
+  _prev: ProjectState,
   formData: FormData,
-): Promise<void> {
+): Promise<ProjectState> {
   const user = await getCurrentUser();
   if (!user || user.role !== "admin") redirect("/login");
 
   const id = Number(formData.get("id"));
-  if (!Number.isInteger(id)) return;
+  if (!Number.isInteger(id)) return { error: "Invalid project." };
 
   const [existing] = await db
     .select()
     .from(projects)
     .where(and(eq(projects.id, id), eq(projects.ownerId, user.id)))
     .limit(1);
-  if (!existing) return;
+  if (!existing) return { error: "Project not found." };
 
   await db
     .update(projects)
@@ -170,4 +175,5 @@ export async function toggleVisibilityAction(
 
   revalidatePath("/dashboard");
   revalidatePath("/");
+  return {};
 }

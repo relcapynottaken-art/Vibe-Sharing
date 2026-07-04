@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
@@ -51,6 +52,7 @@ export async function signupAction(
     username: created.username,
     role: created.role,
   });
+  revalidatePath("/", "layout");
   redirect("/dashboard");
 }
 
@@ -118,10 +120,12 @@ export async function loginAction(
     username: user.username,
     role: user.role,
   });
+  revalidatePath("/", "layout");
   redirect(user.role === "admin" ? "/admin" : "/dashboard");
 }
 
 export async function logoutAction(): Promise<void> {
   await destroySession();
+  revalidatePath("/", "layout");
   redirect("/");
 }
