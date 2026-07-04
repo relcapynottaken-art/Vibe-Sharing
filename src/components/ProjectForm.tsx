@@ -24,8 +24,14 @@ export function ProjectForm({
   );
   const editing = Boolean(project);
 
-  const initialVisibility: "private" | "public" =
-    project && project.submissionStatus !== "none" ? "public" : "private";
+  // New projects default to Public so a submission actually reaches the review
+  // queue. When editing, reflect the project's current state (anything other
+  // than "none" means it has been made public).
+  const initialVisibility: "private" | "public" = project
+    ? project.submissionStatus !== "none"
+      ? "public"
+      : "private"
+    : "public";
   const [visibility, setVisibility] = useState<"private" | "public">(
     initialVisibility,
   );
