@@ -39,6 +39,20 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
               {project.categoryName}
             </span>
           )}
+          <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-muted border border-border">
+            {project.projectType === "claude_artifact"
+              ? "Claude Artifact"
+              : "Website"}
+          </span>
+          <span
+            className={`text-xs px-2 py-0.5 rounded-full border ${
+              project.pricing === "paid"
+                ? "bg-warning/15 text-warning border-warning/30"
+                : "bg-success/15 text-success border-success/30"
+            }`}
+          >
+            {project.pricing === "paid" ? "Paid" : "Free"}
+          </span>
           {project.authorRole === "user" && (
             <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-accent-2/15 text-accent-2 border border-accent-2/30">
               <UsersIcon className="text-[0.7rem]" />

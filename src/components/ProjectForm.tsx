@@ -64,15 +64,45 @@ export function ProjectForm({
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm">
-        <span className="text-muted">Screenshot image URL</span>
+        <span className="text-muted">Screenshot image URL (https) *</span>
         <input
           name="imageUrl"
           type="url"
+          required
+          pattern="https://.*"
           defaultValue={project?.imageUrl ?? ""}
           placeholder="https://…/screenshot.png"
           className="input"
         />
       </label>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <label className="flex flex-col gap-1.5 text-sm">
+          <span className="text-muted">Type *</span>
+          <select
+            name="projectType"
+            required
+            defaultValue={project?.projectType ?? "website"}
+            className="input cursor-pointer"
+          >
+            <option value="website">Website</option>
+            <option value="claude_artifact">Claude Artifact</option>
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-sm">
+          <span className="text-muted">Access *</span>
+          <select
+            name="pricing"
+            required
+            defaultValue={project?.pricing ?? "free"}
+            className="input cursor-pointer"
+          >
+            <option value="free">Free</option>
+            <option value="paid">Paid</option>
+          </select>
+        </label>
+      </div>
 
       <label className="flex flex-col gap-1.5 text-sm">
         <span className="text-muted">Category</span>
@@ -162,6 +192,7 @@ function VisibilityOption({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={`text-left rounded-xl border p-3 transition-all cursor-pointer ${
         active
           ? "border-accent-strong bg-accent-strong/10 shadow-lg shadow-accent-strong/10"

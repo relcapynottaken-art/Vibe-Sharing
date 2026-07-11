@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { getProjectById } from "@/lib/data";
+import { getProjectById, getProjectFeedback } from "@/lib/data";
+import { deleteFeedbackAction } from "@/app/actions/feedback";
+import { FeedbackForm } from "@/components/FeedbackForm";
+import { ToastForm } from "@/components/ToastForm";
 import {
   ArrowLeftIcon,
   ExternalLinkIcon,
   ImageIcon,
+  MessageIcon,
+  TrashIcon,
   UsersIcon,
 } from "@/components/icons";
 
@@ -31,6 +36,14 @@ export default async function ProjectPage({
     isPublic ||
     (viewer && (viewer.role === "admin" || viewer.id === project.authorId));
   if (!canView) notFound();
+
+  const feedbackItems = isPublic ? await getProjectFeedback(projectId) : [];
+  const alreadyGaveFeedback = Boolean(
+    viewer && feedbackItems.some((f) => f.authorId === viewer.id),
+  );
+  const canGiveFeedback = Boolean(
+    isPublic && viewer && viewer.id !== project.authorId && !alreadyGaveFeedback,
+  );
 
   return (
     <article className="max-w-3xl mx-auto flex flex-col gap-6">
@@ -67,6 +80,20 @@ export default async function ProjectPage({
                 {project.categoryName}
               </span>
             )}
+            <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-muted border border-border">
+              {project.projectType === "claude_artifact"
+                ? "Claude Artifact"
+                : "Website"}
+            </span>
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full border ${
+                project.pricing === "paid"
+                  ? "bg-warning/15 text-warning border-warning/30"
+                  : "bg-success/15 text-success border-success/30"
+              }`}
+            >
+              {project.pricing === "paid" ? "Paid" : "Free"}
+            </span>
             {project.authorRole === "user" && (
               <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-accent-2/15 text-accent-2 border border-accent-2/30">
                 <UsersIcon className="text-[0.7rem]" />
@@ -94,6 +121,68 @@ export default async function ProjectPage({
             {project.description}
           </p>
         </div>
+      )}
+
+      {isPublic && (
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <MessageIcon className="text-base text-muted" />
+            Feedback
+            <span className="text-xs font-normal text-muted bg-white/5 border border-border rounded-full px-2 py-0.5">
+              {feedbackItems.length}
+            </span>
+          </h2>
+
+          {canGiveFeedback && <FeedbackForm projectId={project.id} />}
+          {!viewer && (
+            <p className="text-sm text-muted">
+              <Link href="/login" className="text-accent hover:text-accent-2">
+                Log in
+              </Link>{" "}
+              to leave feedback.
+            </p>
+          )}
+
+          {feedbackItems.length === 0 ? (
+            <p className="text-sm text-muted">No feedback yet.</p>
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {feedbackItems.map((f) => (
+                <li key={f.id} className="glass rounded-2xl p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <Link
+                        href={`/u/${f.authorName}`}
+                        className="text-sm font-medium hover:text-accent transition-colors"
+                      >
+                        @{f.authorName}
+                      </Link>
+                      <p className="text-sm text-foreground/90 mt-1 whitespace-pre-wrap leading-relaxed">
+                        {f.body}
+                      </p>
+                    </div>
+                    {viewer &&
+                      (viewer.role === "admin" || viewer.id === f.authorId) && (
+                        <ToastForm
+                          action={deleteFeedbackAction}
+                          successMessage="Feedback removed."
+                        >
+                          <input type="hidden" name="id" value={f.id} />
+                          <button
+                            type="submit"
+                            aria-label="Delete feedback"
+                            className="grid place-items-center w-7 h-7 rounded-full text-muted hover:bg-danger/15 hover:text-danger transition-colors cursor-pointer"
+                          >
+                            <TrashIcon className="text-sm" />
+                          </button>
+                        </ToastForm>
+                      )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       )}
     </article>
   );

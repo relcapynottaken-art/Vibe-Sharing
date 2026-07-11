@@ -140,3 +140,23 @@ export const LinkIcon = (p: SVGProps<SVGSVGElement>) => (
     <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07l1.36-1.36" />
   </Base>
 );
+
+export const PinIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Base {...p}>
+    <path d="M12 17v5" />
+    <path d="M9 3h6l-1 7 3.5 2.5v1.5h-11V12L10 10z" />
+  </Base>
+);
+
+export const MessageIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Base {...p}>
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </Base>
+);
+
+export const AwardIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Base {...p}>
+    <circle cx="12" cy="8" r="5" />
+    <path d="M8.5 12.5 7 22l5-3 5 3-1.5-9.5" />
+  </Base>
+);

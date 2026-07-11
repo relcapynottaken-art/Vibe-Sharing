@@ -16,7 +16,9 @@ function readProjectInput(formData: FormData) {
     title: formData.get("title"),
     description: formData.get("description") ?? "",
     url: formData.get("url"),
-    imageUrl: formData.get("imageUrl") ?? "",
+    imageUrl: formData.get("imageUrl"),
+    projectType: formData.get("projectType"),
+    pricing: formData.get("pricing"),
     categoryId: rawCategory ? rawCategory : undefined,
     visibility: formData.get("visibility") ?? undefined,
   });
@@ -33,8 +35,16 @@ export async function createProjectAction(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
-  const { title, description, url, imageUrl, categoryId, visibility } =
-    parsed.data;
+  const {
+    title,
+    description,
+    url,
+    imageUrl,
+    projectType,
+    pricing,
+    categoryId,
+    visibility,
+  } = parsed.data;
 
   const isAdmin = user.role === "admin";
 
@@ -52,7 +62,9 @@ export async function createProjectAction(
     title,
     description: description ?? "",
     url,
-    imageUrl: imageUrl ? imageUrl : null,
+    imageUrl,
+    projectType,
+    pricing,
     categoryId: categoryId ?? null,
     isPublic: false,
     submissionStatus,
@@ -87,17 +99,32 @@ export async function updateProjectAction(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
-  const { title, description, url, imageUrl, categoryId, visibility } =
-    parsed.data;
+  const {
+    title,
+    description,
+    url,
+    imageUrl,
+    projectType,
+    pricing,
+    categoryId,
+    visibility,
+  } = parsed.data;
 
   // Recompute moderation state for non-admins based on their private/public
-  // choice. Going public (unless already approved) enters the review queue;
-  // going private clears any review state. Admins keep their own state.
+  // choice. Going private clears any review state. Going public — or editing
+  // the content of an already-approved project — (re-)enters the review
+  // queue: approval covered what the admin saw at review time, not whatever
+  // the project is edited into afterwards. Admins keep their own state.
   let submissionStatus = existing.submissionStatus;
   let reviewerNote = existing.reviewerNote;
   if (user.role !== "admin") {
     if (visibility === "public") {
-      if (existing.submissionStatus !== "approved") {
+      const contentChanged =
+        title !== existing.title ||
+        (description ?? "") !== existing.description ||
+        url !== existing.url ||
+        imageUrl !== existing.imageUrl;
+      if (existing.submissionStatus !== "approved" || contentChanged) {
         submissionStatus = "pending";
         reviewerNote = null;
       }
@@ -113,7 +140,9 @@ export async function updateProjectAction(
       title,
       description: description ?? "",
       url,
-      imageUrl: imageUrl ? imageUrl : null,
+      imageUrl,
+      projectType,
+      pricing,
       categoryId: categoryId ?? null,
       submissionStatus,
       reviewerNote,
@@ -147,6 +176,38 @@ export async function deleteProjectAction(
 
   revalidatePath("/dashboard");
   revalidatePath("/");
+  return {};
+}
+
+// Owner (or admin): pin/unpin a project so it sorts first on the profile.
+export async function togglePinAction(
+  _prev: ProjectState,
+  formData: FormData,
+): Promise<ProjectState> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const id = Number(formData.get("id"));
+  if (!Number.isInteger(id)) return { error: "Invalid project." };
+
+  const ownership =
+    user.role === "admin"
+      ? eq(projects.id, id)
+      : and(eq(projects.id, id), eq(projects.ownerId, user.id));
+  const [existing] = await db
+    .select({ id: projects.id, isPinned: projects.isPinned })
+    .from(projects)
+    .where(ownership)
+    .limit(1);
+  if (!existing) return { error: "Project not found." };
+
+  await db
+    .update(projects)
+    .set({ isPinned: !existing.isPinned, updatedAt: new Date() })
+    .where(eq(projects.id, id));
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/u/${user.username}`);
   return {};
 }
 

@@ -10,8 +10,10 @@ import {
   destroySession,
   hashPassword,
   verifyPassword,
+  DUMMY_PASSWORD_HASH,
 } from "@/lib/auth";
 import { credentialsSchema } from "@/lib/validation";
+import { clientIp, rateLimit } from "@/lib/ratelimit";
 
 export type AuthState = { error?: string };
 
@@ -22,6 +24,14 @@ export async function signupAction(
   _prev: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
+  // Signup runs a bcrypt hash (expensive) on every attempt and is an
+  // unauthenticated "username taken" oracle — throttle by IP.
+  const ip = await clientIp();
+  const rl = await rateLimit(`signup:${ip}`, { limit: 8, windowSec: 3600 });
+  if (!rl.success) {
+    return { error: "Too many signups from this network. Try again later." };
+  }
+
   const parsed = credentialsSchema.safeParse({
     username: formData.get("username"),
     password: formData.get("password"),
@@ -60,6 +70,15 @@ export async function loginAction(
   _prev: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
+  // Per-account lockout below stops brute-forcing one account; this per-IP
+  // limit independently caps how fast one client can hammer the endpoint
+  // across many different usernames at once.
+  const ip = await clientIp();
+  const ipRl = await rateLimit(`login-ip:${ip}`, { limit: 20, windowSec: 600 });
+  if (!ipRl.success) {
+    return { error: "Too many attempts from this network. Try again later." };
+  }
+
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const generic: AuthState = { error: "Invalid username or password." };
@@ -75,10 +94,7 @@ export async function loginAction(
   // Always run a hash compare to keep timing roughly constant and avoid
   // leaking whether the username exists.
   if (!user) {
-    await verifyPassword(
-      password,
-      "$2b$12$0000000000000000000000000000000000000000000000000000",
-    );
+    await verifyPassword(password, DUMMY_PASSWORD_HASH);
     return generic;
   }
 

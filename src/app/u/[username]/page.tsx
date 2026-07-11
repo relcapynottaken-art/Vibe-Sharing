@@ -1,8 +1,16 @@
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { getUserPublicProfile } from "@/lib/data";
+import { getUserPublicProfile, getUserTier, TIER_LABELS } from "@/lib/data";
+import { toggleTrustedAction } from "@/app/actions/admin";
 import { ProjectCard } from "@/components/ProjectCard";
-import { GridIcon, LinkIcon, ShieldIcon } from "@/components/icons";
+import { ToastForm } from "@/components/ToastForm";
+import {
+  AwardIcon,
+  CheckIcon,
+  GridIcon,
+  LinkIcon,
+  ShieldIcon,
+} from "@/components/icons";
 
 export default async function PublicProfilePage({
   params,
@@ -15,6 +23,7 @@ export default async function PublicProfilePage({
   const result = await getUserPublicProfile(username, { viewerIsAdmin });
   if (!result) notFound();
   const { profile, projects } = result;
+  const { tier, uploads, feedbackReceived } = await getUserTier(profile.id);
 
   const initial = (profile.displayName || profile.username)
     .charAt(0)
@@ -46,6 +55,35 @@ export default async function PublicProfilePage({
                 <ShieldIcon className="text-[0.7rem]" />
                 Admin
               </span>
+            )}
+            <span
+              className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-accent-strong/15 text-accent border border-accent-strong/30"
+              title={`Tier from activity: ${uploads} public project${uploads === 1 ? "" : "s"}, ${feedbackReceived} feedback received`}
+            >
+              <AwardIcon className="text-[0.7rem]" />
+              {TIER_LABELS[tier]}
+            </span>
+            {profile.isTrusted && (
+              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-success/15 text-success border border-success/30">
+                <CheckIcon className="text-[0.7rem]" />
+                Trusted
+              </span>
+            )}
+            {viewerIsAdmin && profile.role !== "admin" && (
+              <ToastForm
+                action={toggleTrustedAction}
+                successMessage={
+                  profile.isTrusted ? "Trusted status removed." : "Marked as trusted."
+                }
+              >
+                <input type="hidden" name="userId" value={profile.id} />
+                <button
+                  type="submit"
+                  className="btn btn-ghost px-2.5 py-1 text-xs"
+                >
+                  {profile.isTrusted ? "Remove trusted" : "Mark trusted"}
+                </button>
+              </ToastForm>
             )}
           </div>
           {profile.displayName && (

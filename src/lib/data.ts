@@ -1,7 +1,7 @@
 import "server-only";
-import { and, asc, desc, eq, ilike, ne, not, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, ne, not, or } from "drizzle-orm";
 import { db } from "@/db";
-import { categories, projects, users } from "@/db/schema";
+import { categories, feedback, projects, users } from "@/db/schema";
 
 export type ProjectCard = {
   id: number;
@@ -9,6 +9,9 @@ export type ProjectCard = {
   description: string;
   url: string;
   imageUrl: string | null;
+  projectType: "website" | "claude_artifact";
+  pricing: "free" | "paid";
+  isPinned: boolean;
   isPublic: boolean;
   submissionStatus: "none" | "pending" | "approved" | "rejected";
   reviewerNote: string | null;
@@ -27,6 +30,9 @@ const cardColumns = {
   description: projects.description,
   url: projects.url,
   imageUrl: projects.imageUrl,
+  projectType: projects.projectType,
+  pricing: projects.pricing,
+  isPinned: projects.isPinned,
   isPublic: projects.isPublic,
   submissionStatus: projects.submissionStatus,
   reviewerNote: projects.reviewerNote,
@@ -114,7 +120,9 @@ export async function getUserProjects(userId: number): Promise<ProjectCard[]> {
     .innerJoin(users, eq(projects.ownerId, users.id))
     .leftJoin(categories, eq(projects.categoryId, categories.id))
     .where(eq(projects.ownerId, userId))
-    .orderBy(desc(projects.createdAt)) as Promise<ProjectCard[]>;
+    .orderBy(desc(projects.isPinned), desc(projects.createdAt)) as Promise<
+    ProjectCard[]
+  >;
 }
 
 export async function getPendingSubmissions(): Promise<ProjectCard[]> {
@@ -159,6 +167,7 @@ export type UserProfile = {
   bio: string | null;
   avatarUrl: string | null;
   websiteUrl: string | null;
+  isTrusted: boolean;
   createdAt: Date;
 };
 
@@ -175,6 +184,7 @@ export async function getUserPublicProfile(
       bio: users.bio,
       avatarUrl: users.avatarUrl,
       websiteUrl: users.websiteUrl,
+      isTrusted: users.isTrusted,
       createdAt: users.createdAt,
     })
     .from(users)
@@ -195,7 +205,75 @@ export async function getUserPublicProfile(
     .innerJoin(users, eq(projects.ownerId, users.id))
     .leftJoin(categories, eq(projects.categoryId, categories.id))
     .where(where)
-    .orderBy(desc(projects.createdAt))) as ProjectCard[];
+    .orderBy(desc(projects.isPinned), desc(projects.createdAt))) as ProjectCard[];
 
   return { profile, projects: ownerProjects };
+}
+
+// ---------- Feedback & tiers ----------
+
+export type FeedbackItem = {
+  id: number;
+  projectId: number;
+  body: string;
+  createdAt: Date;
+  authorId: number;
+  authorName: string;
+};
+
+export async function getProjectFeedback(
+  projectId: number,
+): Promise<FeedbackItem[]> {
+  return db
+    .select({
+      id: feedback.id,
+      projectId: feedback.projectId,
+      body: feedback.body,
+      createdAt: feedback.createdAt,
+      authorId: feedback.authorId,
+      authorName: users.username,
+    })
+    .from(feedback)
+    .innerJoin(users, eq(feedback.authorId, users.id))
+    .where(eq(feedback.projectId, projectId))
+    .orderBy(desc(feedback.createdAt));
+}
+
+export type Tier = "newcomer" | "bronze" | "silver" | "gold";
+
+export const TIER_LABELS: Record<Tier, string> = {
+  newcomer: "Newcomer",
+  bronze: "Bronze",
+  silver: "Silver",
+  gold: "Gold",
+};
+
+// Tier derives from activity only: publicly visible uploads plus feedback
+// received on them. Trusted status is separate — an explicit admin decision.
+export function computeTier(uploads: number, feedbackReceived: number): Tier {
+  const score = uploads * 10 + feedbackReceived * 2;
+  if (score >= 100) return "gold";
+  if (score >= 40) return "silver";
+  if (score >= 10) return "bronze";
+  return "newcomer";
+}
+
+export async function getUserTier(
+  userId: number,
+): Promise<{ tier: Tier; uploads: number; feedbackReceived: number }> {
+  const [uploadRow] = await db
+    .select({ value: count() })
+    .from(projects)
+    .innerJoin(users, eq(projects.ownerId, users.id))
+    .where(and(eq(projects.ownerId, userId), publicCondition));
+
+  const [feedbackRow] = await db
+    .select({ value: count() })
+    .from(feedback)
+    .innerJoin(projects, eq(feedback.projectId, projects.id))
+    .where(eq(projects.ownerId, userId));
+
+  const uploads = uploadRow?.value ?? 0;
+  const feedbackReceived = feedbackRow?.value ?? 0;
+  return { tier: computeTier(uploads, feedbackReceived), uploads, feedbackReceived };
 }

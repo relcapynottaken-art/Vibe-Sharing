@@ -66,6 +66,7 @@ export default async function HomePage({
               name="q"
               defaultValue={q ?? ""}
               placeholder="Search projects…"
+              aria-label="Search projects"
               className="input pl-9"
             />
           </label>

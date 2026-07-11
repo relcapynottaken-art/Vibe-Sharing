@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { getUserProjects, type ProjectCard } from "@/lib/data";
 import {
   deleteProjectAction,
+  togglePinAction,
   toggleVisibilityAction,
 } from "@/app/actions/projects";
 import { ToastForm } from "@/components/ToastForm";
@@ -13,6 +14,7 @@ import {
   GridIcon,
   LockIcon,
   PencilIcon,
+  PinIcon,
   PlusIcon,
   TrashIcon,
   UsersIcon,
@@ -153,6 +155,25 @@ function DashboardRow({
       </div>
 
       <div className="flex items-center gap-2">
+        <ToastForm
+          action={togglePinAction}
+          successMessage={
+            project.isPinned ? "Project unpinned." : "Project pinned to your profile."
+          }
+        >
+          <input type="hidden" name="id" value={project.id} />
+          <button
+            type="submit"
+            className={`btn btn-ghost px-3 py-1.5 text-sm ${project.isPinned ? "text-accent" : ""}`}
+            aria-pressed={project.isPinned}
+            aria-label={project.isPinned ? "Unpin project" : "Pin project"}
+          >
+            <PinIcon className="text-sm" />
+            <span className="hidden sm:inline">
+              {project.isPinned ? "Unpin" : "Pin"}
+            </span>
+          </button>
+        </ToastForm>
         {isAdmin && (
           <ToastForm
             action={toggleVisibilityAction}
